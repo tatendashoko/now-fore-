@@ -5,7 +5,7 @@ library(patchwork)
 .args <- if (interactive()) c(
     file.path("local", "data", c("daily_WC.rds", "weekly_WC.rds")), # cases
     file.path("local", "output", "score_WC.rds"), # scores
-    file.path("local", "output", c("forecast_daily_WC.rds", "forecast_weekly_WC.rds")), # forecasts (also contains timing)
+    file.path("local", "output", c("forecast_daily_WC.rds", "forecast_weekly_WC.rds", "forecast_special_WC.rds")), # forecasts (also contains timing)
     file.path("local", "output", "diagnostics_WC.csv"), # diagnostics
     file.path("local", "figures", "panel_fig_WC.png") # diagnostics
 ) else commandArgs(trailingOnly = TRUE)
@@ -25,8 +25,13 @@ runtimes_daily_dt[, type := "daily"]
 runtimes_weekly_dt <- readRDS(.args[5])$timing |>
     rbindlist()
 runtimes_weekly_dt[, type := "weekly"]
+# Weekly-scale
+runtimes_special_dt <- readRDS(.args[6])$timing |>
+    rbindlist()
+runtimes_weekly_dt[, type := "rescale"]
+
 # Diagnostics
-diagnostics_dt <- fread(.args[6])
+diagnostics_dt <- fread(.args[7])
 
 # other data
 train_window <- 70
@@ -95,20 +100,19 @@ runtimes_daily_dt <- runtimes_daily_dt[
     on = "slide"
 ]
 
-# Weekly data
-runtimes_weekly_dt <- readRDS(.args[5])$timing |>
-    rbindlist()
-
-runtimes_weekly_dt[, type := "weekly"]
-
 # Add dates by slide
 runtimes_weekly_dt <- runtimes_weekly_dt[
     dates_by_slide,
     on = "slide"
 ]
 
+runtimes_special_dt <- runtimes_special_dt[
+    dates_by_slide,
+    on = "slide"
+]
+
 # Combine the daily and weekly runtimes
-timing_dt_combined <- rbind(runtimes_daily_dt, runtimes_weekly_dt)
+timing_dt_combined <- rbind(runtimes_daily_dt, runtimes_weekly_dt, runtimes_special_dt)
 
 # Remove slide
 timing_dt_combined[, slide := NULL]
@@ -131,7 +135,9 @@ timing_dt_complete <- merge(
     all.y = FALSE, 
     all.x = TRUE 
 )
-    
+
+# @james TODO: not sure how to think about this w/ addition of rescaled forecast
+
 ## Runtimes plot
 runtimes_plt <- ggplot() +
 	geom_point(data = timing_dt_combined,

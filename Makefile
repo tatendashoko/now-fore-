@@ -74,7 +74,7 @@ ${FIGDIR}/incidence.png: R/fig_incidence.R data/intermediate.rds | ${FIGDIR}
 ${FIGDIR}/daily_vs_weekly_%.png: R/fig_daily_vs_weekly.R ${DATDIR}/daily_%.rds ${DATDIR}/weekly_%.rds | ${FIGDIR}
 	$(call R)
 	
-${FIGDIR}/benchmarks_%.png: R/fig_timing.R ${OUTDIR}/forecast_daily_%.rds ${OUTDIR}/forecast_weekly_%.rds | ${FIGDIR}
+${FIGDIR}/benchmarks_%.png: R/fig_timing.R ${OUTDIR}/forecast_daily_%.rds ${OUTDIR}/forecast_weekly_%.rds ${OUTDIR}/forecast_special_%.rds | ${FIGDIR}
 	$(call R)
 
 ${FIGDIR}/panel_fig_%.png: \
@@ -84,6 +84,7 @@ ${FIGDIR}/panel_fig_%.png: \
 	${OUTDIR}/score_%.rds \
 	${OUTDIR}/forecast_daily_%.rds \
 	${OUTDIR}/forecast_weekly_%.rds \
+	${OUTDIR}/forecast_special_%.rds \
 	${OUTDIR}/diagnostics_%.csv | ${FIGDIR}
 	$(call R)
 
@@ -96,10 +97,13 @@ allpanelfigs: $(patsubst %,${FIGDIR}/panel_fig_%.png,${PROVINCES})
 ${OUTDIR}/forecast_%.rds: R/pipeline.R ${DATDIR}/%.rds | ${OUTDIR}
 	$(call R)
 
-${OUTDIR}/score_%.rds: R/score.R ${DATDIR}/daily_%.rds ${DATDIR}/weekly_%.rds ${OUTDIR}/forecast_daily_%.rds ${OUTDIR}/forecast_weekly_%.rds
+${OUTDIR}/forecast_special_%.rds: R/special_pipe.R ${DATDIR}/weekly_%.rds | ${OUTDIR}
 	$(call R)
 
-${OUTDIR}/diagnostics_%.csv: R/diagnostics.R ${OUTDIR}/forecast_daily_%.rds ${OUTDIR}/forecast_weekly_%.rds
+${OUTDIR}/score_%.rds: R/score.R ${DATDIR}/daily_%.rds ${DATDIR}/weekly_%.rds ${OUTDIR}/forecast_daily_%.rds ${OUTDIR}/forecast_weekly_%.rds ${OUTDIR}/forecast_special_%.rds
+	$(call R)
+
+${OUTDIR}/diagnostics_%.csv: R/diagnostics.R ${OUTDIR}/forecast_daily_%.rds ${OUTDIR}/forecast_weekly_%.rds ${OUTDIR}/forecast_special_%.rds
 	$(call R)
 
 alldiagnostics: $(patsubst %,${OUTDIR}/diagnostics_%.csv,${PROVINCES})
