@@ -2,7 +2,7 @@ library(data.table)
 
 .args <- if (interactive()) {
 	c(
-		file.path("local/output", c("forecast_daily_EC.rds", "forecast_weekly_EC.rds")),
+		file.path("local/output", c("forecast_daily_EC.rds", "forecast_weekly_EC.rds", "forecast_special_EC.rds")),
 		file.path("local/output", "diagnostics_EC.csv")
 	)
 } else {
@@ -12,11 +12,13 @@ library(data.table)
 # Get diagnostic data
 daily_dt <- readRDS(.args[1])$diagnostics |> rbindlist()
 weekly_dt <- readRDS(.args[2])$diagnostics |> rbindlist()
+special_dt <- readRDS(.args[3])$diagnostics |> rbindlist()
 
 # Create groupable data for the plots
 daily_dt$type <- "daily"
 weekly_dt$type <- "weekly"
-diagnostics_dt_combined <- rbind(daily_dt, weekly_dt)
+special_dt$type <- "rescale"
+diagnostics_dt_combined <- rbind(daily_dt, weekly_dt, special_dt)
 
 # order rows by slide
 # diagnostics_dt_combined <- diagnostics_dt_combined[order(slide)]

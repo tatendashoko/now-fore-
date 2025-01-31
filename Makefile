@@ -96,10 +96,13 @@ allpanelfigs: $(patsubst %,${FIGDIR}/panel_fig_%.png,${PROVINCES})
 ${OUTDIR}/forecast_%.rds: R/pipeline.R ${DATDIR}/%.rds | ${OUTDIR}
 	$(call R)
 
-${OUTDIR}/score_%.rds: R/score.R ${DATDIR}/daily_%.rds ${DATDIR}/weekly_%.rds ${OUTDIR}/forecast_daily_%.rds ${OUTDIR}/forecast_weekly_%.rds
+${OUTDIR}/forecast_special_%.rds: R/special_pipe.R ${DATDIR}/weekly_%.rds | ${OUTDIR}
 	$(call R)
 
-${OUTDIR}/diagnostics_%.csv: R/diagnostics.R ${OUTDIR}/forecast_daily_%.rds ${OUTDIR}/forecast_weekly_%.rds
+${OUTDIR}/score_%.rds: R/score.R ${DATDIR}/daily_%.rds ${DATDIR}/weekly_%.rds ${OUTDIR}/forecast_daily_%.rds ${OUTDIR}/forecast_weekly_%.rds ${OUTDIR}/forecast_special_%.rds
+	$(call R)
+
+${OUTDIR}/diagnostics_%.csv: R/diagnostics.R ${OUTDIR}/forecast_daily_%.rds ${OUTDIR}/forecast_weekly_%.rds ${OUTDIR}/forecast_special_%.rds
 	$(call R)
 
 alldiagnostics: $(patsubst %,${OUTDIR}/diagnostics_%.csv,${PROVINCES})
